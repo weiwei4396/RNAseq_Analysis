@@ -3,8 +3,8 @@ Long-read RNA-seq analysis
 
 
 
-### Long reads Transcript Identification and Quantification
-#### 4.1 [IsoQuant](https://github.com/ablab/IsoQuant) and [Spl-IsoQuant](https://github.com/algbio/spl-IsoQuant)
+### 1.Long reads Transcript Identification and Quantification
+#### 1.1 [IsoQuant](https://github.com/ablab/IsoQuant) and [Spl-IsoQuant](https://github.com/algbio/spl-IsoQuant)
 前者用来做bulk数据的识别和定量(这个算法也可以做单细胞或者空转, 但是不能区分umi, 如果已经做了barcode和umi的校正, 可以输入bam到这个算法中), 后者用来做单细胞和空转的识别和定量(只能输入fastq.gz, 我觉得他的barcode和umi识别和校正的效果不好)
 <details>
 <summary> </summary>
@@ -22,7 +22,7 @@ isoquant.py \
 
 </details>
 
-#### 4.2 [Sicelore-2.1](https://github.com/ucagenomix/sicelore-2.1)
+#### 1.2 [Sicelore-2.1](https://github.com/ucagenomix/sicelore-2.1)
 用来做长读长单细胞数据的定量
 <details>
 <summary> </summary>
@@ -73,18 +73,12 @@ gtfToGenePred -genePredExt -geneNameAsName2 $gtf gencode.v38.refflat.txt
 paste <(cut -f 12 gencode.v38.refflat.txt) <(cut -f 1-10 gencode.v38.refflat.txt) > gencode.v38.refFlat
 java -jar -Xmx180g $sicelorejar IsoformMatrix I=${outputdir}/SC_ONT_sorted_umi.bam GENETAG=GE UMITAG=U8 CELLTAG=BC REFFLAT=gencode.v38.refFlat CSV=ValidBarcodes.csv DELTA=2 MAXCLIP=150 METHOD=STRICT AMBIGUOUS_ASSIGN=false OUTDIR=./UMI PREFIX=sicelore
 ```
-
-</details>
-
-#### 4.3 [Isosceles](https://github.com/Genentech/Isosceles)
-<details>
-<summary> </summary>
-
-
 </details>
 
 
-## 5.SUPPA Alternative splicing events
+
+
+## 3.SUPPA Alternative splicing events
 只需要给定更新后的gtf(可以用BroCOLI识别后更新的GTF, 或者初始给定的GTF), [SUPPA](https://github.com/comprna/SUPPA) 就可以从gtf中得到可变剪切事件;
 
 <details>
