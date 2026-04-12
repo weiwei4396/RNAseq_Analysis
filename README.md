@@ -3,7 +3,7 @@ Long-read RNA-seq analysis
 
 
 
-### 1.Long reads Transcript Identification and Quantification
+### 1. Long reads Transcript Identification and Quantification
 #### 1.1 [IsoQuant](https://github.com/ablab/IsoQuant) and [Spl-IsoQuant](https://github.com/algbio/spl-IsoQuant)
 前者用来做bulk数据的识别和定量(这个算法也可以做单细胞或者空转, 但是不能区分umi, 如果已经做了barcode和umi的校正, 可以输入bam到这个算法中), 后者用来做单细胞和空转的识别和定量(只能输入fastq.gz, 我觉得他的barcode和umi识别和校正的效果不好)
 <details>
@@ -78,7 +78,7 @@ java -jar -Xmx180g $sicelorejar IsoformMatrix I=${outputdir}/SC_ONT_sorted_umi.b
 
 
 
-## 3.SUPPA Alternative splicing events
+## 3. SUPPA Alternative splicing events
 只需要给定更新后的gtf(可以用BroCOLI识别后更新的GTF, 或者初始给定的GTF), [SUPPA](https://github.com/comprna/SUPPA) 就可以从gtf中得到可变剪切事件;
 
 <details>
