@@ -1,5 +1,4 @@
-## Transcriptome_Analysis
-Long-read RNA-seq analysis
+Short-read and Long-read RNA-seq analysis
 ## Table of contents
 - [LongReads](#LongReads)
 - [ShortReads](#ShortReads)
