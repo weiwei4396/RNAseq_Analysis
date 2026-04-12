@@ -1,28 +1,9 @@
-# Alternative-splicing-Analysis
+## Transcriptome_Analysis
 Long-read RNA-seq analysis
 
-## 1.NanoPlot
-<details>
-<summary> </summary>
 
 
-</details>
-
-## 2.fastplong
-<details>
-<summary> </summary>
-
-
-</details>
-
-## 3.Coverage
-<details>
-<summary> </summary>
-
-
-</details>
-
-## 4.Transcript Identification and Quantification
+### Long reads Transcript Identification and Quantification
 #### 4.1 [IsoQuant](https://github.com/ablab/IsoQuant) and [Spl-IsoQuant](https://github.com/algbio/spl-IsoQuant)
 前者用来做bulk数据的识别和定量(这个算法也可以做单细胞或者空转, 但是不能区分umi, 如果已经做了barcode和umi的校正, 可以输入bam到这个算法中), 后者用来做单细胞和空转的识别和定量(只能输入fastq.gz, 我觉得他的barcode和umi识别和校正的效果不好)
 <details>
