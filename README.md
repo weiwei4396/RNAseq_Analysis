@@ -1,8 +1,11 @@
 ## Transcriptome_Analysis
 Long-read RNA-seq analysis
+## Table of contents
+- [LongReads](#LongReads)
+- [ShortReads](#ShortReads)
 
 
-
+## LongReads
 ### 1. Long reads Transcript Identification and Quantification
 #### 1.1 [IsoQuant](https://github.com/ablab/IsoQuant) and [Spl-IsoQuant](https://github.com/algbio/spl-IsoQuant)
 前者用来做bulk数据的识别和定量(这个算法也可以做单细胞或者空转, 但是不能区分umi, 如果已经做了barcode和umi的校正, 可以输入bam到这个算法中), 后者用来做单细胞和空转的识别和定量(只能输入fastq.gz, 我觉得他的barcode和umi识别和校正的效果不好)
@@ -94,6 +97,29 @@ python /data/workdir/panw/softwares/SUPPA2.3/suppa.py generateEvents -i updated_
 - --pool-genes：这个参数可以充分利用novel的转录本, 因为novel转录本的gene_id命名并不是十分精确, 有些novel转录本应该与注释的是相同基因, 可能是由于开头和结尾部分超过基因范围导致命名写为NA, 而这个参数可以根据位置更精确地确定可变剪切事件;
 
 </details>
+
+
+
+
+## ShortReads
+### 1. Transcriptome gene quantification and differential analysis
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
