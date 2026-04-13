@@ -103,18 +103,59 @@ python /data/workdir/panw/softwares/SUPPA2.3/suppa.py generateEvents -i updated_
 ## ShortReads
 ### 1. Transcriptome gene quantification and differential analysis
 这个流程主要基于STAR做比对，然后用featurecount对基因表达做定量，最后使用DESeq2做差异分析。
+
 (1) STAR对参考基因组创建索引
+<details>
+<summary> </summary>
+
 ```shell
-STAR --runThreadN 16 --runMode genomeGenerate --genomeDir star252b --genomeFastaFiles /data/workdir/reference/human/refdata-gex-GRCh38-2024-A/fasta/genome.fa --sjdbGTFfile /data/workdir/reference/human/refdata-gex-GRCh38-2024-A/genes/genes.gtf --sjdbOverhang 100 --genomeSAindexNbases 14 --genomeChrBinNbits 18 --genomeSAsparseD 3
+STAR --runThreadN 16 --runMode genomeGenerate --genomeDir star252b --genomeFastaFiles /data/workdir/reference/human/refdata-gex-GRCh38-2024-A/fasta/genome.fa --sjdbGTFfile /data/workdir/reference/human/refdata-gex-GRCh38-2024-A/genes/genes.gtf --sjdbOverhang 149 --genomeSAindexNbases 14 --genomeChrBinNbits 18 --genomeSAsparseD 3
 ```
+</details>
 
 需要注意的是, 创建的基因组的索引在使用时需要与STAR的版本保持一致, 否则会报错! 上面代码中后面的4个参数与cellranger下载下来的reference使用的参数是一样的;
 
+(2) 使用STAR比对
+<details>
+<summary> </summary>
+  
+```shell
+for f1 in ${DataPath}/*_R1_001.fastq.gz
+do
+    sample=$(basename "${f1}" _R1_001.fastq.gz)
+    f2="${DataPath}/${sample}_R2_001.fastq.gz"
+    if [[ ! -f "${f2}" ]]; then
+        echo "R2 file not found for ${sample}, skip."
+        continue
+    fi
+    echo "======================================"
+    echo "Processing sample: ${sample}"
+    echo "R1: ${f1}"
+    echo "R2: ${f2}"
+    echo "======================================"
 
+    $STAR \
+      --runThreadN ${threads} \
+      --runMode alignReads \
+      --genomeDir "${STARgenome}" \
+      --twopassMode Basic \
+      --outSAMtype BAM SortedByCoordinate \
+      --sjdbOverhang 149 \
+      --readFilesIn "${f1}" "${f2}" \
+      --readFilesCommand zcat \
+      --outFileNamePrefix "${STARresult}/${sample}." \
+      --genomeSAindexNbases 14 \
+      --outFilterMultimapNmax 10 \
+      --outFilterMismatchNmax 10
+done
 
+```
 
+</details>
 
+--sjdbOverhang参数需要保证与创建索引时一致;
 
+(3) featurecount对基因定量
 
 
 
