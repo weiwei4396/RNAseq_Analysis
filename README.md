@@ -80,7 +80,7 @@ java -jar -Xmx180g $sicelorejar IsoformMatrix I=${outputdir}/SC_ONT_sorted_umi.b
 
 
 
-## 3. SUPPA Alternative splicing events
+## 2. SUPPA Alternative splicing events
 只需要给定更新后的gtf(可以用BroCOLI识别后更新的GTF, 或者初始给定的GTF), [SUPPA](https://github.com/comprna/SUPPA) 就可以从gtf中得到可变剪切事件;
 
 <details>
@@ -102,6 +102,7 @@ python /data/workdir/panw/softwares/SUPPA2.3/suppa.py generateEvents -i updated_
 
 ## ShortReads
 ### 1. Transcriptome gene quantification and differential analysis
+这个流程主要基于STAR做比对，然后用featurecount对基因表达做定量，最后使用DESeq2做差异分析。
 
 
 
