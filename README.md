@@ -1,3 +1,5 @@
+事实上，目前所有的分析脚本直接询问Claude Code就可以基本解决了
+
 Short-read and Long-read RNA-seq analysis
 ## Table of contents
 - [LongReads](#LongReads)
@@ -156,8 +158,167 @@ done
 --sjdbOverhang参数需要保证与创建索引时一致;
 
 (3) featurecount对基因定量
+<details>
+<summary> </summary>
+  
+```shell
+FeatureCount=/data/workdir/run_pengmx/subread-2.1.1-Linux-x86_64/bin/featureCounts
+out_dir=/data/workdir/run_pengmx/FeatureCountResult
+bam_files=$(find "$STARresult" -maxdepth 2 -type f -name "*.Aligned.sortedByCoord.out.bam" | sort)
+
+echo "These bam files will be counted:"
+echo "$bam_files"
+
+"$FeatureCount" \
+  -T 30 \
+  -p \
+  --countReadPairs \
+  -t exon \
+  -g gene_name \
+  -a "$genomeGtf" \
+  -o "$out_dir/pengmx_featureCounts_count.txt" \
+  $bam_files
+
+```
+
+</details>
+
+(4) R脚本DESeq2差异基因表达分析
+<details>
+<summary> </summary>
+  
+```R
+
+# ============================================================
+# DESeq2 差异表达分析流程
+# 输入：featureCounts 输出文件 pengmx_featureCounts_count.txt
+# ============================================================
+# ---- 1. 加载包 ----
+library(DESeq2)
+library(ggplot2)
+library(pheatmap)
+library(RColorBrewer)
 
 
+# ---- 2. 读入 featureCounts 结果 ----
+# 第一行是 # Program 注释，所以 skip=1
+raw <- read.table("D:/AAA博士汇报/pmx/pengmx_featureCounts_count.txt",
+                  header = TRUE, sep = "\t",
+                  skip = 1, check.names = FALSE)
+
+# 前 6 列为注释：Geneid Chr Start End Strand Length
+# 第 7 列开始是各样本 count
+count_matrix <- raw[, 7:ncol(raw)]
+rownames(count_matrix) <- raw$Geneid
+
+# featureCounts 默认样本名是完整 BAM 路径，清理一下
+colnames(count_matrix) <- gsub(".*/|\\.bam$", "", colnames(count_matrix))
+head(count_matrix)
+# 46-3:CRC46_3
+colnames(count_matrix) <- c("CRC46_3", "CRC46_4", "CRC46_5", "CRC46_6", "CRC60_5", "CRC60_6",
+                            "control_1", "control_2", "control_3", "control_4", "control_6")
+
+# ---- 3. 构建样本信息表（coldata） ----
+# 根据你实际的分组情况修改!
+sample_names <- colnames(count_matrix)
+sample_names   # 先打印出来看一眼
+
+# 比如 CRC 样本名里都带 "CRC" 或 "T"（tumor）,正常样本带 "N" 或 "control"
+# 根据实际命名规则来匹配,下面只是示例:
+group <- ifelse(grepl("CRC|tumor|T$", sample_names), "CRC", "control")
+
+coldata <- data.frame(
+  row.names = sample_names,
+  condition = factor(group, levels = c("control", "CRC"))
+)
+coldata   # 打印出来肉眼核对每个样本的分组对不对
+# 一致性检查
+stopifnot(all(rownames(coldata) == colnames(count_matrix)))
+table(coldata$condition)   # 应该显示 control: 5, CRC: 6
+
+# ---- 4. 构建 DESeq2 对象 ----
+dds <- DESeqDataSetFromMatrix(countData = count_matrix,
+                              colData   = coldata,
+                              design    = ~ condition)
+
+# 过滤掉低表达基因（至少在若干样本里有 ≥10 reads）
+keep <- rowSums(counts(dds) >= 10) >= 3
+dds  <- dds[keep, ]
+
+# ---- 5. 运行 DESeq2 ----
+dds <- DESeq(dds)
+resultsNames(dds)   # 查看对比项名字
+
+# ---- 6. 提取结果 ----
+res <- results(dds, contrast = c("condition", "CRC", "control"),
+               alpha = 0.05)
+summary(res)
+
+# LFC 收缩(可视化更稳定)
+# 先看一下 resultsNames(dds) 输出的名字,一般会是 "condition_CRC_vs_control"
+library(DESeq2)
+library(apeglm)
+res_shrink <- lfcShrink(dds, coef = "condition_CRC_vs_control",
+                        type = "apeglm")
+
+# 排序并导出
+res_df <- as.data.frame(res_shrink)
+res_df$Geneid <- rownames(res_df)
+res_df <- res_df[order(res_df$padj), ]
+write.csv(res_df, "c:/Users/Lenovo/Desktop/DESeq2_CRC_vs_control_all.csv", row.names = FALSE)
+
+
+# ---- 7. 筛选差异基因 ----
+# 常用阈值：|log2FC| > 1 且 padj < 0.05
+lgFd = 0.6
+deg <- subset(res_df, !is.na(padj) & padj < 0.05 & abs(log2FoldChange) > lgFd)
+deg$regulation <- ifelse(deg$log2FoldChange > 0, "Up", "Down")
+table(deg$regulation)
+write.csv(deg, "c:/Users/Lenovo/Desktop/DEGs_padj0.05_log2FC1.csv", row.names = FALSE)
+
+# ---- 8. 可视化 ----
+## 8.1 PCA（需要先做 vst/rlog 变换）
+vsd <- vst(dds, blind = FALSE)
+plotPCA(vsd, intgroup = "condition") +
+  geom_text(aes(label = name), vjust = 2, size = 3) +
+  theme_bw()
+ggsave("c:/Users/Lenovo/Desktop/PCA.pdf", width = 6, height = 5)
+
+## 8.2 样本间距离热图
+sampleDists <- dist(t(assay(vsd)))
+pheatmap(as.matrix(sampleDists),
+         clustering_distance_rows = sampleDists,
+         clustering_distance_cols = sampleDists,
+         col = colorRampPalette(rev(brewer.pal(9, "Blues")))(255),
+         filename = "c:/Users/Lenovo/Desktop/sample_distance_heatmap.pdf")
+
+## 8.3 火山图
+res_df$sig <- "NS"
+res_df$sig[res_df$padj < 0.05 & res_df$log2FoldChange > lgFd] <- "Up"
+res_df$sig[res_df$padj < 0.05 & res_df$log2FoldChange < -lgFd] <- "Down"
+
+ggplot(res_df, aes(log2FoldChange, -log10(padj), color = sig)) +
+  geom_point(alpha = 0.7, size = 1.2) +
+  scale_color_manual(values = c("Up" = "red", "Down" = "blue", "NS" = "grey70")) +
+  geom_vline(xintercept = c(-lgFd, lgFd), linetype = "dashed") +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+  theme_bw() +
+  labs(x = "log2 Fold Change", y = "-log10(padj)", title = "Volcano plot")
+ggsave("c:/Users/Lenovo/Desktop/volcano.pdf", width = 6, height = 5)
+
+## 8.4 Top 差异基因表达热图
+top_genes <- head(rownames(deg)[order(deg$padj)], 30)
+mat <- assay(vsd)[top_genes, ]
+mat <- mat - rowMeans(mat)   # 中心化
+pheatmap(mat,
+         annotation_col = coldata,
+         show_rownames = TRUE,
+         cluster_cols = TRUE,
+         filename = "c:/Users/Lenovo/Desktop/top30_DEG_heatmap.pdf")
+
+```
+
+</details>
 
 
 
