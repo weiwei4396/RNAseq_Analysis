@@ -1,4 +1,4 @@
-# Long-Read-RNAseq-Processing-Pipeline
+# Long-Read-RNA-seq-Processing-Pipeline
 
 This pipeline provides a fully containerized Singularity environment that bundles all required tools and dependencies for **long-read transcriptome analysis**. With a single command, the entire workflow from raw FASTQ input through sequence alignment, full-length isoform identification and quantification, and a rich set of downstream analyses can be executed reproducibly on any compatible system.
 
