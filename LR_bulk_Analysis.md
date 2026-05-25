@@ -1,13 +1,11 @@
 # Long-Read-RNAseq-Processing-Pipeline
 
-This pipeline provides a fully containerized Singularity environment that bundles all required tools and dependencies for **long-read transcriptome analysis**. With a single command, the entire workflow—from raw FASTQ/BAM input through read QC, full-length read identification, splice-aware genome alignment, transcript discovery & quantification, isoform classification, and a rich set of downstream analyses—can be executed reproducibly on any compatible system.
+This pipeline provides a fully containerized Singularity environment that bundles all required tools and dependencies for **long-read transcriptome analysis**. With a single command, the entire workflow from raw FASTQ input through sequence alignment, full-length isoform identification and quantification, and a rich set of downstream analyses can be executed reproducibly on any compatible system.
 
-The pipeline supports **two sequencing platforms** through a single `platform` switch:
+- **ONT (Oxford Nanopore)** — full-length cDNA and direct RNA reads, transcript isoforms are discovered and quantified with **bambu**.
+- **PacBio (Iso-seq / HiFi)** — full-length reads are processed with the official **Iso-seq** suite.
 
-- **ONT (Oxford Nanopore)** — full-length cDNA reads are oriented/trimmed with **Pychopper**, transcripts are discovered and quantified with **bambu**.
-- **PacBio (Iso-seq / HiFi)** — full-length reads are processed with the official **Iso-seq** suite (`lima` → `isoseq refine` → `isoseq cluster` → `isoseq collapse` → `pigeon`).
-
-Both branches converge on **minimap2** for splice-aware genome alignment, and share the same downstream modules (isoform classification, differential expression, differential transcript usage, alternative splicing, coding-potential prediction, fusion detection, and sample-level PCA/correlation). The pipeline supports **multiple samples** and optional **condition-vs-condition comparisons**.
+Both branches converge on **minimap2** for sequence alignment, and share the same downstream modules (isoform classification, differential expression, differential transcript usage, alternative splicing, coding-potential prediction, fusion detection). **The pipeline now supports multiple samples and optional treatment-vs-control comparisons.**
 
 ---
 
